@@ -8,6 +8,7 @@
 	options = {
     'manifestPath': //生成文件路径
     'basePath': //目标文件的basePath
+    'timestamp': //是否基于生成时间戳更新缓存，默认值为false
     'files': [
         {
             'file': //文件相对路径,

@@ -14,6 +14,8 @@ function CacheManifest(options) {
         this.CDNs = defaultCDNHost;
     }
 
+    this.timestamp = options.timestamp || false;
+
     this.basePath = options.basePath || process.cwd();
     this.files = options.files || [{
         dir: 'public',
@@ -83,7 +85,9 @@ function generateContent() {
     this.generatedDate = new Date();
     var content = [];
     content.push('CACHE MANIFEST');
-    content.push('# Generated at: ' + this.generatedDate);
+    if(this.timestamp) {
+        content.push('# Generated at: ' + this.generatedDate);
+    }
     content.push('');
     content.push('CACHE:');
     this.filepathes.forEach(function(filepath){
