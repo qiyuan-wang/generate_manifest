@@ -1,0 +1,22 @@
+{
+  "name": "generate_manifest",
+  "version": "0.0.1",
+  "description": "generate application manifest for static files.",
+  "main": "generate_manifest.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cache",
+    "manifest"
+  ],
+  "author": "Qiyuan Wang",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^1.4.2",
+    "wrench": "^1.5.8"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.5"
+  }
+}
