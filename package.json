@@ -1,6 +1,6 @@
 {
   "name": "generate_manifest",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "generate application manifest for static files.",
   "main": "generate_manifest.js",
   "scripts": {
