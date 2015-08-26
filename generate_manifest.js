@@ -17,23 +17,22 @@ function CacheManifest(options) {
         dir: 'public',
         prefix: '/'
     }];
+
+    this.filepathes = [];
 }
 
-
-CacheManifest.prototype.init = init;
-CacheManifest.prototype.formatFilepathes = formatFilepathes;
-CacheManifest.prototype.updatePathesWithMTime = updatePathesWithMTime;
-CacheManifest.prototype.updatePathesWithCDN = updatePathesWithCDN;
 CacheManifest.prototype.generateManifest = generateManifest;
+CacheManifest.prototype.formatFilepathes = formatFilepathes;
+CacheManifest.prototype.appendMTime = appendMTime;
+CacheManifest.prototype.writeManifest = writeManifest;
 
-function init() {
-    this.formatFilepathes();
-    this.updatePathesWithMTime();
-    this.updatePathesWithCDN();
+function generateManifest() {
+    this.formatFilepathes()
+        .appendMTime()
+        .writeManifest();
 }
 
 function formatFilepathes() {
-
     this.files.forEach(function(entry) {
         if(entry.file) {
             // file
@@ -44,9 +43,9 @@ function formatFilepathes() {
             if(!isAbsolute(entry.file)) {
                 entry.file = path.join(this.basePath, entry.file);
             }
-            this.originFiles.push({
-                file: entry.file,
-                fullpath: entry.path
+            this.filepathes.push({
+                absolutePath: entry.file,
+                exportPath: entry.path
             });
 
         } else if (entry.dir) {
@@ -57,9 +56,9 @@ function formatFilepathes() {
             wrench.readdirSyncRecursive(entry.dir).forEach(function(filename) {
                 var file = path.join(entry.dir, filename);
                 if (fs.statSync(file).isFile()) {
-                    this.originFiles.push({
-                        file: file,
-                        fullpath: entry.prefix + filename
+                    this.filepathes.push({
+                        absolutePath: file,
+                        exportPath: entry.prefix + filename
                     });
                 }
             }, this);
@@ -68,35 +67,26 @@ function formatFilepathes() {
     return this;
 }
 
-function updatePathesWithMTime() {
-    this.filepathes = [];
-    this.originFiles.forEach(function(file) {
-        this.filepathes.push(file.path + "?s=" + (fs.statSync(file.file).mtime.valueOf() / 1000));
-    }, this);
-    console.log(1, this.filepathes);
+function appendMTime() {
+    this.filepathes.forEach(function(filepath) {
+        var mtime = fs.statSync(filepath.absolutePath).mtime.valueOf() / 1000;
+        filepath.exportPath = [filepath.exportPath, "?s=", mtime].join('');
+    });
     return this;
 }
 
-function updatePathesWithCDN() {
-    this.cdnizedFilepaths = [];
-    this.CDNs.forEach(function(cdn){
-        this.filepathes.forEach(function(filepath) {
-            this.cdnizedFilepaths.push(path.join(cdn, filepath));
-        }, this);
-    }, this);
-    return this;
-}
-
-function generateManifest() {
+function writeManifest() {
     this.generatedDate = new Date();
     var content = [];
     content.push('CACHE MANIFEST');
     content.push('# Generated at: ' + this.generatedDate);
     content.push('');
     content.push('CACHE:');
-    this.cdnizedFilepaths.forEach(function(filepath){
-        content.push(filepath);
-    });
+    this.filepathes.forEach(function(filepath){
+        for(var i in this.CDNs) {
+            content.push(this.CDNs[i] + filepath.exportPath);
+        }
+    }, this);
     content = content.join("\n");
     fs.writeFile(this.manifestPath, content, function(err){
         if(err) {

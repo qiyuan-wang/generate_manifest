@@ -24,7 +24,6 @@ var options = {
 
 var cache_manifest = new CacheManifest(options);
 
-cache_manifest.init();
 cache_manifest.generateManifest();
 
 // var files = generate_manifest.retrieveFilesDirectories(options.files);
