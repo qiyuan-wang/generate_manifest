@@ -1,3 +1,5 @@
+'use strict';
+
 var fs = require('fs');
 var wrench = require('wrench');
 var path = require('path');
@@ -24,11 +26,13 @@ function CacheManifest(options) {
 CacheManifest.prototype.generateManifest = generateManifest;
 CacheManifest.prototype.formatFilepathes = formatFilepathes;
 CacheManifest.prototype.appendMTime = appendMTime;
+CacheManifest.prototype.generateContent = generateContent;
 CacheManifest.prototype.writeManifest = writeManifest;
 
 function generateManifest() {
     this.formatFilepathes()
         .appendMTime()
+        .generateContent()
         .writeManifest();
 }
 
@@ -75,7 +79,7 @@ function appendMTime() {
     return this;
 }
 
-function writeManifest() {
+function generateContent() {
     this.generatedDate = new Date();
     var content = [];
     content.push('CACHE MANIFEST');
@@ -87,8 +91,16 @@ function writeManifest() {
             content.push(this.CDNs[i] + filepath.exportPath);
         }
     }, this);
+    content.push('');
+    content.push('NETWORK:');
+    content.push('*');
     content = content.join("\n");
-    fs.writeFile(this.manifestPath, content, function(err){
+    this.content = content;
+    return this;
+}
+
+function writeManifest() {
+    fs.writeFile(this.manifestPath, this.content, function(err){
         if(err) {
             return console.log(err);
         }
